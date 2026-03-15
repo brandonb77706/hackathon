@@ -46,10 +46,10 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-slate-400 text-sm">Loading your dashboard…</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#f0f4ff]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin shadow-lg shadow-blue-500/20" />
+          <p className="text-slate-500 text-sm font-medium">Loading your dashboard…</p>
         </div>
       </div>
     );
@@ -79,7 +79,7 @@ export default function DashboardPage() {
     <>
       <Navbar />
 
-      <main className="max-w-2xl mx-auto px-4 pb-24 space-y-5 pt-5">
+      <main className="max-w-2xl mx-auto px-4 pb-24 space-y-5 pt-5 animate-fade-in">
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm font-medium">
             {error}
@@ -87,36 +87,38 @@ export default function DashboardPage() {
         )}
 
         {/* ── Hero banner ─────────────────────────────────────────────── */}
-        <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-2xl p-6 text-white shadow-xl shadow-blue-500/20 overflow-hidden">
-          {/* Decorative glow */}
-          <div className="absolute -top-8 -right-8 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-10 -left-4 w-36 h-36 bg-indigo-400/20 rounded-full blur-2xl pointer-events-none" />
+        <div className="relative bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-2xl shadow-blue-500/30 overflow-hidden transition-all duration-300 hover:shadow-blue-500/40 hover:scale-[1.005] group cursor-default">
+          {/* Decorative glow orbs */}
+          <div className="absolute -top-8 -right-8 w-56 h-56 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-12 -left-6 w-44 h-44 bg-indigo-400/25 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-1/2 left-1/3 w-32 h-32 bg-blue-300/10 rounded-full blur-2xl pointer-events-none" />
 
           <div className="relative flex items-start justify-between mb-5">
             <div>
-              <p className="text-blue-200 text-sm font-medium mb-1">
-                Welcome back{user?.name ? `, ${user.name.split(" ")[0]}` : ""}! 👋
+              <p className="text-blue-200 text-sm font-medium mb-1.5 flex items-center gap-1.5">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-300 animate-pulse" />
+                Welcome back{user?.name ? `, ${user.name.split(" ")[0]}` : ""}!
               </p>
-              <p className="text-4xl font-extrabold tracking-tight">
+              <p className="text-5xl font-extrabold tracking-tight tabular-nums">
                 {summary ? `$${summary.total_this_week.toFixed(2)}` : "$0.00"}
               </p>
-              <p className="text-blue-300 text-sm mt-1">earned this week</p>
+              <p className="text-blue-300/90 text-sm mt-1.5 font-medium">earned this week</p>
             </div>
-            <div className="text-right bg-white/10 rounded-xl px-4 py-2.5 backdrop-blur-sm">
-              <p className="text-2xl font-bold">
+            <div className="text-right bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl px-4 py-3 shadow-inner">
+              <p className="text-2xl font-bold tabular-nums">
                 {summary?.hours_this_week.toFixed(1) ?? "0"}h
               </p>
-              <p className="text-blue-200 text-xs">hrs worked</p>
+              <p className="text-blue-200/80 text-xs font-medium mt-0.5">hrs worked</p>
             </div>
           </div>
           <div className="relative mt-2">
-            <div className="flex justify-between text-xs text-blue-200/80 mb-2">
+            <div className="flex justify-between text-xs text-blue-200/80 mb-2 font-medium">
               <span>Weekly progress</span>
               <span>{summary?.hours_this_week.toFixed(1) ?? 0} / 40h goal</span>
             </div>
-            <div className="w-full bg-white/15 rounded-full h-2">
+            <div className="w-full bg-white/15 rounded-full h-2.5">
               <div
-                className="bg-white rounded-full h-2 transition-all duration-700 shadow-sm"
+                className="bg-white rounded-full h-2.5 transition-all duration-700 shadow-[0_0_8px_rgba(255,255,255,0.6)]"
                 style={{ width: `${hoursProgress}%` }}
               />
             </div>
@@ -124,16 +126,16 @@ export default function DashboardPage() {
         </div>
 
         {/* ── Stat tabs ───────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm">
-          <div className="flex border-b border-slate-100">
+        <div className="bg-white rounded-2xl border border-blue-100/60 overflow-hidden shadow-sm shadow-blue-500/5">
+          <div className="flex gap-1.5 p-2 bg-slate-100/80 border-b border-slate-200/60">
             {(["week", "avg", "best"] as StatTab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-3 text-sm font-medium transition-all duration-200 ${
+                className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all duration-200 ${
                   activeTab === tab
-                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-inner"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+                    ? "bg-white text-blue-700 shadow-sm shadow-blue-500/10 border border-blue-100/60"
+                    : "text-slate-500 hover:text-slate-700 hover:bg-white/60"
                 }`}
               >
                 {tab === "week" && "💵 "}
@@ -143,9 +145,9 @@ export default function DashboardPage() {
               </button>
             ))}
           </div>
-          <div className="px-6 py-5 text-center">
-            <p className="text-3xl font-extrabold text-slate-900 tracking-tight">{tabContent[activeTab].value}</p>
-            <p className="text-slate-400 text-sm mt-1">{tabContent[activeTab].sub}</p>
+          <div className="px-6 py-6 text-center">
+            <p className="text-4xl font-extrabold text-slate-900 tracking-tight tabular-nums">{tabContent[activeTab].value}</p>
+            <p className="text-slate-400 text-sm mt-1.5 font-medium">{tabContent[activeTab].sub}</p>
           </div>
         </div>
 
