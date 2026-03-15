@@ -15,27 +15,27 @@ function formatHour(h: number): string {
 }
 
 function ephToColor(eph: number, maxEph: number): string {
-  if (eph === 0 || maxEph === 0) return "bg-gray-50";
+  if (eph === 0 || maxEph === 0) return "bg-slate-50";
   const intensity = Math.round((eph / maxEph) * 9);
   const shades = [
-    "bg-green-50",
-    "bg-green-100",
-    "bg-green-200",
-    "bg-green-300",
-    "bg-green-400",
-    "bg-green-500",
-    "bg-green-600",
-    "bg-green-700",
-    "bg-green-800",
-    "bg-green-900",
+    "bg-blue-50",
+    "bg-blue-100",
+    "bg-blue-200",
+    "bg-blue-300",
+    "bg-blue-400",
+    "bg-blue-500",
+    "bg-blue-600",
+    "bg-blue-700",
+    "bg-blue-800",
+    "bg-blue-900",
   ];
-  return shades[intensity] || "bg-green-900";
+  return shades[intensity] || "bg-blue-900";
 }
 
 function textColor(eph: number, maxEph: number): string {
-  if (eph === 0) return "text-gray-200";
+  if (eph === 0) return "text-slate-200";
   const intensity = Math.round((eph / maxEph) * 9);
-  return intensity >= 6 ? "text-white" : "text-gray-700";
+  return intensity >= 6 ? "text-white" : "text-slate-700";
 }
 
 interface Props {
@@ -60,16 +60,16 @@ export default function PeakHeatmap({ windows, dataSource, city }: Props) {
 
   return (
     <div className="overflow-x-auto">
-      <div className="mb-2 text-xs text-gray-500 font-medium">
+      <div className="mb-2 text-xs text-slate-500 font-medium flex items-center gap-1.5">
         {dataSource === "personal"
-          ? "📊 Based on your shift data"
-          : `🌐 Based on ${city || "community"} driver data`}
+          ? <><span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" />Based on your shift data</>
+          : <><span className="w-1.5 h-1.5 rounded-full bg-indigo-400 inline-block" />Based on {city || "community"} driver data</>}
       </div>
       <div className="grid" style={{ gridTemplateColumns: "48px repeat(7, 1fr)" }}>
         {/* Header row */}
         <div className="text-xs text-gray-400 text-right pr-1 pt-1"></div>
         {DAYS.map((d) => (
-          <div key={d} className="text-center text-xs font-semibold text-gray-600 pb-1">
+          <div key={d} className="text-center text-xs font-semibold text-slate-500 pb-1">
             {d}
           </div>
         ))}
@@ -79,7 +79,7 @@ export default function PeakHeatmap({ windows, dataSource, city }: Props) {
           <>
             <div
               key={`label-${hour}`}
-              className="text-xs text-gray-400 text-right pr-1 flex items-center justify-end"
+              className="text-xs text-slate-400 text-right pr-1 flex items-center justify-end"
               style={{ height: 28 }}
             >
               {formatHour(hour)}
@@ -111,13 +111,13 @@ export default function PeakHeatmap({ windows, dataSource, city }: Props) {
 
       {/* Color legend */}
       <div className="flex items-center gap-2 mt-3">
-        <span className="text-xs text-gray-400">Low</span>
-        {["bg-green-100", "bg-green-300", "bg-green-500", "bg-green-700", "bg-green-900"].map(
+        <span className="text-xs text-slate-400">Low</span>
+        {["bg-blue-100", "bg-blue-300", "bg-blue-500", "bg-blue-700", "bg-blue-900"].map(
           (c) => (
             <div key={c} className={`w-5 h-3 rounded ${c}`} />
           )
         )}
-        <span className="text-xs text-gray-400">High $/hr</span>
+        <span className="text-xs text-slate-400">High $/hr</span>
       </div>
     </div>
   );

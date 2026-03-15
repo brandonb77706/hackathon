@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { fetchMe, logShift } from "@/lib/api";
@@ -12,24 +12,163 @@ const PLATFORMS = [
   { id: "other", label: "Other", icon: "📦" },
 ] as const;
 
+const PLATFORM_LOGOS: Record<string, React.ReactNode> = {
+  uber: (
+    <div className="w-full flex flex-col items-center gap-2.5">
+      <div className="w-16 h-16 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center p-2.5 overflow-hidden">
+        <img
+          src="/logos/uber.svg"
+          alt="Uber"
+          className="w-full h-full object-contain"
+        />
+      </div>
+      <span className="font-semibold text-slate-700 text-sm">Uber</span>
+    </div>
+  ),
+  doordash: (
+    <div className="w-full flex flex-col items-center gap-2.5">
+      <div className="w-16 h-16 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center p-2.5 overflow-hidden">
+        <img
+          src="/logos/doordash.png"
+          alt="DoorDash"
+          className="w-full h-full object-contain"
+        />
+      </div>
+      <span className="font-semibold text-slate-700 text-sm">DoorDash</span>
+    </div>
+  ),
+  lyft: (
+    <div className="w-full flex flex-col items-center gap-2.5">
+      <div className="w-16 h-16 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center p-2.5 overflow-hidden">
+        <img
+          src="/logos/lyft.svg"
+          alt="Lyft"
+          className="w-full h-full object-contain"
+        />
+      </div>
+      <span className="font-semibold text-slate-700 text-sm">Lyft</span>
+    </div>
+  ),
+  instacart: (
+    <div className="w-full flex flex-col items-center gap-2.5">
+      <div className="w-16 h-16 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center p-2.5 overflow-hidden">
+        <img
+          src="/logos/instacart.png"
+          alt="Instacart"
+          className="w-full h-full object-contain"
+        />
+      </div>
+      <span className="font-semibold text-slate-700 text-sm">Instacart</span>
+    </div>
+  ),
+  other: (
+    <div className="w-full flex flex-col items-center gap-2.5">
+      <div className="w-16 h-16 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center">
+        <svg
+          className="w-7 h-7 text-slate-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={1.8}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"
+          />
+        </svg>
+      </div>
+      <span className="font-semibold text-slate-700 text-sm">Other</span>
+    </div>
+  ),
+};
+
 const US_CITIES = [
-  "Akron, OH", "Albuquerque, NM", "Anaheim, CA", "Anchorage, AK", "Arlington, TX",
-  "Atlanta, GA", "Austin, TX", "Bakersfield, CA", "Baltimore, MD", "Baton Rouge, LA",
-  "Birmingham, AL", "Boston, MA", "Buffalo, NY", "Charlotte, NC", "Chicago, IL",
-  "Cincinnati, OH", "Cleveland, OH", "Colorado Springs, CO", "Columbus, OH", "Corpus Christi, TX",
-  "Dallas, TX", "Denver, CO", "Detroit, MI", "El Paso, TX", "Fort Wayne, IN",
-  "Fort Worth, TX", "Fresno, CA", "Greensboro, NC", "Henderson, NV", "Honolulu, HI",
-  "Houston, TX", "Indianapolis, IN", "Irving, TX", "Jacksonville, FL", "Jersey City, NJ",
-  "Kansas City, MO", "Las Vegas, NV", "Laredo, TX", "Lexington, KY", "Lincoln, NE",
-  "Long Beach, CA", "Los Angeles, CA", "Louisville, KY", "Madison, WI", "Memphis, TN",
-  "Mesa, AZ", "Miami, FL", "Milwaukee, WI", "Minneapolis, MN", "Nashville, TN",
-  "New Orleans, LA", "New York, NY", "Newark, NJ", "Norfolk, VA", "Oakland, CA",
-  "Oklahoma City, OK", "Omaha, NE", "Orlando, FL", "Philadelphia, PA", "Phoenix, AZ",
-  "Pittsburgh, PA", "Plano, TX", "Portland, OR", "Raleigh, NC", "Reno, NV",
-  "Richmond, VA", "Riverside, CA", "Sacramento, CA", "San Antonio, TX", "San Diego, CA",
-  "San Francisco, CA", "San Jose, CA", "Santa Ana, CA", "Seattle, WA", "St. Louis, MO",
-  "St. Paul, MN", "Stockton, CA", "Tampa, FL", "Toledo, OH", "Tucson, AZ",
-  "Tulsa, OK", "Virginia Beach, VA", "Washington, DC", "Wichita, KS", "Winston-Salem, NC",
+  "Akron, OH",
+  "Albuquerque, NM",
+  "Anaheim, CA",
+  "Anchorage, AK",
+  "Arlington, TX",
+  "Atlanta, GA",
+  "Austin, TX",
+  "Bakersfield, CA",
+  "Baltimore, MD",
+  "Baton Rouge, LA",
+  "Birmingham, AL",
+  "Boston, MA",
+  "Buffalo, NY",
+  "Charlotte, NC",
+  "Chicago, IL",
+  "Cincinnati, OH",
+  "Cleveland, OH",
+  "Colorado Springs, CO",
+  "Columbus, OH",
+  "Corpus Christi, TX",
+  "Dallas, TX",
+  "Denver, CO",
+  "Detroit, MI",
+  "El Paso, TX",
+  "Fort Wayne, IN",
+  "Fort Worth, TX",
+  "Fresno, CA",
+  "Greensboro, NC",
+  "Henderson, NV",
+  "Honolulu, HI",
+  "Houston, TX",
+  "Indianapolis, IN",
+  "Irving, TX",
+  "Jacksonville, FL",
+  "Jersey City, NJ",
+  "Kansas City, MO",
+  "Las Vegas, NV",
+  "Laredo, TX",
+  "Lexington, KY",
+  "Lincoln, NE",
+  "Long Beach, CA",
+  "Los Angeles, CA",
+  "Louisville, KY",
+  "Madison, WI",
+  "Memphis, TN",
+  "Mesa, AZ",
+  "Miami, FL",
+  "Milwaukee, WI",
+  "Minneapolis, MN",
+  "Nashville, TN",
+  "New Orleans, LA",
+  "New York, NY",
+  "Newark, NJ",
+  "Norfolk, VA",
+  "Oakland, CA",
+  "Oklahoma City, OK",
+  "Omaha, NE",
+  "Orlando, FL",
+  "Philadelphia, PA",
+  "Phoenix, AZ",
+  "Pittsburgh, PA",
+  "Plano, TX",
+  "Portland, OR",
+  "Raleigh, NC",
+  "Reno, NV",
+  "Richmond, VA",
+  "Riverside, CA",
+  "Sacramento, CA",
+  "San Antonio, TX",
+  "San Diego, CA",
+  "San Francisco, CA",
+  "San Jose, CA",
+  "Santa Ana, CA",
+  "Seattle, WA",
+  "St. Louis, MO",
+  "St. Paul, MN",
+  "Stockton, CA",
+  "Tampa, FL",
+  "Toledo, OH",
+  "Tucson, AZ",
+  "Tulsa, OK",
+  "Virginia Beach, VA",
+  "Washington, DC",
+  "Wichita, KS",
+  "Winston-Salem, NC",
 ];
 
 type Step = 1 | 2 | 3;
@@ -61,9 +200,12 @@ export default function LogShiftPage() {
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const cityRef = useRef<HTMLDivElement>(null);
 
-  const citySuggestions = cityQuery.length >= 2
-    ? US_CITIES.filter((c) => c.toLowerCase().includes(cityQuery.toLowerCase())).slice(0, 6)
-    : [];
+  const citySuggestions =
+    cityQuery.length >= 2
+      ? US_CITIES.filter((c) =>
+          c.toLowerCase().includes(cityQuery.toLowerCase())
+        ).slice(0, 6)
+      : [];
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -146,22 +288,32 @@ export default function LogShiftPage() {
             <div key={s} className="flex items-center gap-3">
               <div className="flex flex-col items-center gap-1">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200 ${
                     s < step
-                      ? "bg-green-600 text-white"
+                      ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-sm shadow-blue-500/30"
                       : s === step
-                      ? "bg-green-600 text-white ring-4 ring-green-100"
-                      : "bg-gray-100 text-gray-400"
+                      ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white ring-4 ring-blue-100 shadow-sm shadow-blue-500/30"
+                      : "bg-slate-100 text-slate-400"
                   }`}
                 >
                   {s < step ? "✓" : s}
                 </div>
-                <span className={`text-xs ${s === step ? "text-green-700 font-medium" : "text-gray-400"}`}>
+                <span
+                  className={`text-xs ${
+                    s === step ? "text-blue-700 font-medium" : "text-slate-400"
+                  }`}
+                >
                   {stepLabels[s - 1]}
                 </span>
               </div>
               {s < 3 && (
-                <div className={`w-10 h-0.5 mb-4 ${s < step ? "bg-green-600" : "bg-gray-200"}`} />
+                <div
+                  className={`w-10 h-0.5 mb-4 transition-all duration-300 ${
+                    s < step
+                      ? "bg-gradient-to-r from-blue-600 to-indigo-600"
+                      : "bg-slate-200"
+                  }`}
+                />
               )}
             </div>
           ))}
@@ -170,8 +322,11 @@ export default function LogShiftPage() {
         {/* Back button */}
         {step > 1 && (
           <button
-            onClick={() => { setError(null); setStep((s) => (s - 1) as Step); }}
-            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4 transition"
+            onClick={() => {
+              setError(null);
+              setStep((s) => (s - 1) as Step);
+            }}
+            className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-4 transition-colors"
           >
             ← Back
           </button>
@@ -186,17 +341,22 @@ export default function LogShiftPage() {
         {/* ── Step 1: Platform ─────────────────────────────────────── */}
         {step === 1 && (
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-1">Which platform?</h1>
-            <p className="text-gray-400 text-sm mb-6">Tap to select and continue</p>
+            <h1 className="text-2xl font-bold text-slate-900 mb-1 tracking-tight">
+              Which platform?
+            </h1>
+            <p className="text-slate-400 text-sm mb-6">
+              Tap to select and continue
+            </p>
             <div className="grid grid-cols-2 gap-3">
               {PLATFORMS.map((p) => (
                 <button
                   key={p.id}
                   onClick={() => handlePlatform(p.id)}
-                  className="flex flex-col items-center justify-center gap-2 bg-white border-2 border-gray-200 hover:border-green-500 hover:shadow-md rounded-2xl py-6 transition-all active:scale-95"
+                  className="flex flex-col items-center justify-center bg-white border-2 border-slate-200 hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/10 rounded-2xl py-5 px-4 transition-all duration-200 active:scale-95 w-full"
                 >
-                  <span className="text-3xl">{p.icon}</span>
-                  <span className="font-semibold text-gray-700">{p.label}</span>
+                  <div className="flex items-center justify-center">
+                    {PLATFORM_LOGOS[p.id]}
+                  </div>
                 </button>
               ))}
             </div>
@@ -206,34 +366,87 @@ export default function LogShiftPage() {
         {/* ── Step 2: Times ────────────────────────────────────────── */}
         {step === 2 && (
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-1">When did you work?</h1>
-            <p className="text-gray-400 text-sm mb-6">
-              {PLATFORMS.find((p) => p.id === form.platform)?.icon}{" "}
-              {form.platform.charAt(0).toUpperCase() + form.platform.slice(1)} shift
-            </p>
+            <h1 className="text-2xl font-bold text-slate-900 mb-1 tracking-tight">
+              When did you work?
+            </h1>
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-10 h-10 flex items-center justify-center">
+                {form.platform === "uber" && (
+                  <img
+                    src="/logos/uber.svg"
+                    alt="Uber"
+                    className="w-full h-full object-contain"
+                  />
+                )}
+                {form.platform === "doordash" && (
+                  <img
+                    src="/logos/doordash.png"
+                    alt="DoorDash"
+                    className="w-full h-full object-contain"
+                  />
+                )}
+                {form.platform === "lyft" && (
+                  <img
+                    src="/logos/lyft.svg"
+                    alt="Lyft"
+                    className="w-full h-full object-contain"
+                  />
+                )}
+                {form.platform === "instacart" && (
+                  <img
+                    src="/logos/instacart.png"
+                    alt="Instacart"
+                    className="w-full h-full object-contain"
+                  />
+                )}
+                {form.platform === "other" && (
+                  <svg
+                    className="w-full h-full text-slate-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.8}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"
+                    />
+                  </svg>
+                )}
+              </div>
+              <p className="text-slate-400 text-sm">
+                {form.platform.charAt(0).toUpperCase() + form.platform.slice(1)}{" "}
+                shift
+              </p>
+            </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Start time</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Start time
+                </label>
                 <input
                   type="datetime-local"
                   value={form.start_time}
                   onChange={(e) => set("start_time", e.target.value)}
-                  className="w-full border-2 border-gray-200 focus:border-green-500 rounded-xl px-4 py-3 text-base focus:outline-none transition"
+                  className="w-full border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-4 py-3 text-base focus:outline-none transition-all duration-200"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">End time</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  End time
+                </label>
                 <input
                   type="datetime-local"
                   value={form.end_time}
                   onChange={(e) => set("end_time", e.target.value)}
-                  className="w-full border-2 border-gray-200 focus:border-green-500 rounded-xl px-4 py-3 text-base focus:outline-none transition"
+                  className="w-full border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-4 py-3 text-base focus:outline-none transition-all duration-200"
                 />
               </div>
             </div>
             <button
               onClick={handleTimesNext}
-              className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white py-3.5 rounded-xl font-semibold text-base transition active:scale-95"
+              className="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white py-3.5 rounded-xl font-semibold text-base transition-all duration-200 active:scale-[0.98] shadow-lg shadow-blue-500/25"
             >
               Next →
             </button>
@@ -243,14 +456,20 @@ export default function LogShiftPage() {
         {/* ── Step 3: Pay ──────────────────────────────────────────── */}
         {step === 3 && (
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-1">How much did you earn?</h1>
-            <p className="text-gray-400 text-sm mb-6">Almost done!</p>
+            <h1 className="text-2xl font-bold text-slate-900 mb-1 tracking-tight">
+              How much did you earn?
+            </h1>
+            <p className="text-slate-400 text-sm mb-6">Almost done!</p>
             <div className="space-y-4">
               {/* Base pay */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Base pay</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Base pay
+                </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-base pointer-events-none">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-base pointer-events-none">
+                    $
+                  </span>
                   <input
                     type="number"
                     value={form.earnings}
@@ -260,11 +479,11 @@ export default function LogShiftPage() {
                     step="1"
                     placeholder="0.00"
                     inputMode="decimal"
-                    className="w-full border-2 border-gray-200 focus:border-green-500 rounded-xl pl-8 pr-4 py-3 text-base focus:outline-none transition"
+                    className="w-full border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-8 pr-4 py-3 text-base focus:outline-none transition-all duration-200"
                   />
                 </div>
                 {form.earnings && (
-                  <p className="text-xs text-gray-400 mt-1 pl-1">
+                  <p className="text-xs text-slate-400 mt-1 pl-1">
                     = ${parseFloat(form.earnings || "0").toFixed(2)}
                   </p>
                 )}
@@ -272,11 +491,14 @@ export default function LogShiftPage() {
 
               {/* Tips */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tips <span className="text-gray-400 font-normal">(optional)</span>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Tips{" "}
+                  <span className="text-slate-400 font-normal">(optional)</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-base pointer-events-none">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-base pointer-events-none">
+                    $
+                  </span>
                   <input
                     type="number"
                     value={form.tips}
@@ -286,11 +508,11 @@ export default function LogShiftPage() {
                     step="1"
                     placeholder="0.00"
                     inputMode="decimal"
-                    className="w-full border-2 border-gray-200 focus:border-green-500 rounded-xl pl-8 pr-4 py-3 text-base focus:outline-none transition"
+                    className="w-full border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-8 pr-4 py-3 text-base focus:outline-none transition-all duration-200"
                   />
                 </div>
                 {form.tips && (
-                  <p className="text-xs text-gray-400 mt-1 pl-1">
+                  <p className="text-xs text-slate-400 mt-1 pl-1">
                     = ${parseFloat(form.tips || "0").toFixed(2)}
                   </p>
                 )}
@@ -298,7 +520,9 @@ export default function LogShiftPage() {
 
               {/* City autocomplete */}
               <div ref={cityRef}>
-                <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  City
+                </label>
                 <div className="relative">
                   <input
                     type="text"
@@ -311,18 +535,20 @@ export default function LogShiftPage() {
                     onFocus={() => setShowCitySuggestions(true)}
                     placeholder="Type your city…"
                     autoComplete="off"
-                    className={`w-full border-2 rounded-xl px-4 py-3 text-base focus:outline-none transition ${
+                    className={`w-full border-2 rounded-xl px-4 py-3 text-base focus:outline-none transition-all duration-200 ${
                       form.city
-                        ? "border-green-500 bg-green-50"
-                        : "border-gray-200 focus:border-green-500"
+                        ? "border-blue-500 bg-blue-50/50 focus:ring-4 focus:ring-blue-500/10"
+                        : "border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
                     }`}
                   />
                   {form.city && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-green-600 text-lg">✓</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-600 text-lg">
+                      ✓
+                    </span>
                   )}
 
                   {showCitySuggestions && citySuggestions.length > 0 && (
-                    <ul className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+                    <ul className="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden">
                       {citySuggestions.map((city) => (
                         <li key={city}>
                           <button
@@ -333,7 +559,7 @@ export default function LogShiftPage() {
                               set("city", city);
                               setShowCitySuggestions(false);
                             }}
-                            className="w-full text-left px-4 py-3 text-sm hover:bg-green-50 hover:text-green-700 transition border-b border-gray-100 last:border-0"
+                            className="w-full text-left px-4 py-3 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors border-b border-slate-100 last:border-0"
                           >
                             📍 {city}
                           </button>
@@ -342,16 +568,20 @@ export default function LogShiftPage() {
                     </ul>
                   )}
                 </div>
-                {!form.city && cityQuery.length >= 2 && citySuggestions.length === 0 && (
-                  <p className="text-xs text-gray-400 mt-1 pl-1">No matching cities found. Try a different spelling.</p>
-                )}
+                {!form.city &&
+                  cityQuery.length >= 2 &&
+                  citySuggestions.length === 0 && (
+                    <p className="text-xs text-slate-400 mt-1 pl-1">
+                      No matching cities found. Try a different spelling.
+                    </p>
+                  )}
               </div>
             </div>
 
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white py-3.5 rounded-xl font-semibold text-base transition active:scale-95 disabled:opacity-50"
+              className="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white py-3.5 rounded-xl font-semibold text-base transition-all duration-200 active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-blue-500/25"
             >
               {submitting ? "Saving…" : "Log Shift"}
             </button>

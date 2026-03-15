@@ -44,58 +44,63 @@ export default function ProfilePage() {
     <>
       <Navbar />
       <main className="max-w-xl mx-auto px-4 py-10">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Profile</h1>
+        <h1 className="text-2xl font-bold text-slate-900 mb-6 tracking-tight">Profile</h1>
 
         <form
           onSubmit={handleSave}
-          className="bg-white rounded-xl border border-gray-200 p-6 space-y-5"
+          className="bg-white rounded-2xl border border-slate-200/80 p-6 space-y-5 shadow-sm"
         >
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Name</label>
             <input
               type="text"
               value={name}
               readOnly
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-500"
+              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm bg-slate-50 text-slate-500 cursor-not-allowed"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
             <input
               type="email"
               value={email}
               readOnly
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-500"
+              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm bg-slate-50 text-slate-500 cursor-not-allowed"
             />
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-slate-400 mt-1.5">
               Email is for display only — your identity is tied to your Google account.
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              City <span className="text-gray-400 font-normal">(editable)</span>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              City <span className="text-slate-400 font-normal">(editable)</span>
             </label>
             <input
               type="text"
               value={city}
               onChange={(e) => setCity(e.target.value)}
               placeholder="e.g. Toledo, OH"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+              className="w-full border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none transition-all duration-200"
             />
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-slate-400 mt-1.5">
               Used to show community peak data when you have fewer than 5 shifts.
             </p>
           </div>
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
-          {saved && <p className="text-green-600 text-sm">Saved!</p>}
+          {saved && (
+            <p className="text-blue-600 text-sm font-medium flex items-center gap-1.5">
+              <span className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center text-xs">✓</span>
+              Changes saved!
+            </p>
+          )}
 
           <button
             type="submit"
             disabled={saving}
-            className="w-full bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg font-medium transition disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white py-2.5 rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 shadow-sm shadow-blue-500/20 active:scale-[0.98]"
           >
             {saving ? "Saving…" : "Save changes"}
           </button>
