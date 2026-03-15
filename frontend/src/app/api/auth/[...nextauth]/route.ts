@@ -1,7 +1,7 @@
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -9,11 +9,16 @@ const handler = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ account }) {
-      // After Google sign-in, redirect to our FastAPI OAuth flow
-      // which will upsert the user by oauth_sub and issue a FastAPI JWT.
-      // The actual FastAPI JWT exchange happens in /auth/callback page.
-      return true;
+    // Store Google access_token in the JWT so we can pass it to FastAPI
+    async jwt({ token, account }) {
+      if (account) {
+        token.googleAccessToken = account.access_token;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      (session as any).googleAccessToken = token.googleAccessToken;
+      return session;
     },
     async redirect({ url, baseUrl }) {
       return baseUrl + "/auth/callback";
@@ -23,6 +28,7 @@ const handler = NextAuth({
     signIn: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET,
-});
+};
 
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

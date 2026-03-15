@@ -4,7 +4,7 @@ Layer 1 — Math-based peak time analytics.
 Key logic:
 - Users with 5+ shifts: use their personal shift data
 - Users with <5 shifts: fall back to peak_cache (community data for their city)
-- Peak windows = top 5 (day_of_week, hour_of_day) combos ranked by avg $/hr
+- Peak windows = top 10 (day_of_week, hour_of_day) combos ranked by avg $/hr
 - peak_cache is rebuilt on startup and every 50 new shifts
 """
 from datetime import datetime, timezone, timedelta
@@ -20,7 +20,7 @@ async def get_peak_times(
     city: str,
 ) -> PeakTimesResponse:
     """
-    Return top 5 earning windows for a user.
+    Return top 10 earning windows for a user.
     Source is 'personal' if they have 5+ shifts, else 'community'.
     """
     shift_count = await db.shifts.count_documents({"user_id": user_id})
@@ -56,7 +56,7 @@ async def _personal_peak_windows(
             }
         },
         {"$sort": {"avg_eph": -1}},
-        {"$limit": 5},
+        {"$limit": 10},
     ]
     results = []
     async for doc in db.shifts.aggregate(pipeline):
@@ -76,15 +76,38 @@ async def _community_peak_windows(
     db: AsyncIOMotorDatabase, city: str
 ) -> list[PeakWindow]:
     """
-    Query peak_cache for the city's top 5 windows across all platforms.
-    Aggregates across platforms so a single (day, hour) can combine data.
+    Query peak_cache with 3-tier fallback:
+      1. Exact city match  (e.g. "Toledo, OH")
+      2. Same state        (e.g. any ", OH" city)
+      3. National average  (all cities)
     """
+    # Extract state abbreviation from "City, ST" format
+    state = city.split(", ")[-1].strip() if ", " in city else None
+
+    tiers = [
+        ("city",     {"city": city}),
+        ("state",    {"city": {"$regex": f", {state}$"}} if state else None),
+        ("national", {}),
+    ]
+
+    for tier_name, match_filter in tiers:
+        if match_filter is None:
+            continue
+        windows = await _run_community_pipeline(db, match_filter)
+        if windows:
+            return windows
+
+    return []
+
+
+async def _run_community_pipeline(
+    db: AsyncIOMotorDatabase, match_filter: dict
+) -> list[PeakWindow]:
     pipeline = [
-        {"$match": {"city": city}},
+        {"$match": match_filter},
         {
             "$group": {
                 "_id": {"day": "$day_of_week", "hour": "$hour_of_day"},
-                # Weighted average by sample_count across platforms
                 "total_weighted": {
                     "$sum": {"$multiply": ["$avg_earnings_per_hour", "$sample_count"]}
                 },
@@ -98,7 +121,7 @@ async def _community_peak_windows(
             }
         },
         {"$sort": {"avg_eph": -1}},
-        {"$limit": 5},
+        {"$limit": 10},
     ]
     results = []
     async for doc in db.peak_cache.aggregate(pipeline):

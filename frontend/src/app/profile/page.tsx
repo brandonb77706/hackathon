@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
-import { fetchMe, updateUser } from "@/lib/api";
+import { fetchMe, updateUser, AuthError } from "@/lib/api";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function ProfilePage() {
         setEmail(me.email || "");
         setCity(me.city || "");
       })
-      .catch(() => router.push("/login"));
+      .catch((e) => { if (e instanceof AuthError) router.push("/login"); });
   }, [router]);
 
   async function handleSave(e: React.FormEvent) {
