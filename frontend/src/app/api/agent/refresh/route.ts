@@ -1,14 +1,13 @@
 /**
- * Server-side: triggers the Base44 agent to generate a new insight.
- * In production this would call Base44's API; here we call FastAPI's
- * driver-summary, then save a placeholder insight so the UI can poll.
- *
- * Replace the body of this route with your Base44 agent webhook call.
+ * Server-side: calls the Base44 Superagent to generate a new insight.
+ * Fetches driver summary from FastAPI, sends to Base44, saves result.
  */
 import { NextRequest, NextResponse } from "next/server";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const AGENT_API_KEY = process.env.AGENT_API_KEY || "";
+const BASE44_API_URL = process.env.BASE44_API_URL || "";
+const BASE44_API_KEY = process.env.BASE44_API_KEY || "";
 
 export async function POST(req: NextRequest) {
   const { user_id } = await req.json();
@@ -28,24 +27,55 @@ export async function POST(req: NextRequest) {
 
   const summary = await summaryRes.json();
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // TODO: Replace the block below with your Base44 Superagent API call.
-  // Pass `summary` as the data payload to the agent, and capture its
-  // insight_text and top_suggestion from the response.
-  // ─────────────────────────────────────────────────────────────────────────
+  // ── Step 1: Create a Base44 conversation ─────────────────────────────────
+  const convRes = await fetch(`${BASE44_API_URL}/conversations`, {
+    method: "POST",
+    headers: { "api_key": BASE44_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({}),
+  });
+  if (!convRes.ok) {
+    const errBody = await convRes.text();
+    console.error("Base44 create conversation failed:", convRes.status, errBody);
+    return NextResponse.json({ error: `Base44 conversation error ${convRes.status}: ${errBody}` }, { status: 500 });
+  }
+  const conv = await convRes.json();
+  const conversationId = conv.id;
 
-  // Placeholder insight (Base44 agent generates the real one)
-  const bestWindow = summary.top_peak_windows?.[0];
-  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  const dayName = bestWindow ? days[bestWindow.day_of_week] : "the weekend";
-  const hour = bestWindow ? `${bestWindow.hour_of_day}:00` : "evening";
-  const eph = bestWindow ? `$${bestWindow.avg_earnings_per_hour}/hr` : "your top rate";
+  // ── Step 2: Send driver summary and get AI insight ────────────────────────
+  const userContent = JSON.stringify(summary) +
+    '\n\nIMPORTANT: Respond ONLY with valid JSON, no markdown, no prose. Format: {"top_suggestion":"...","insight_text":"..."}';
 
-  const top_suggestion = `Focus on ${dayName} around ${hour} — you average ${eph} then.`;
-  const insight_text = `Based on your recent shifts, ${dayName} evenings are your strongest window. ` +
-    `Your best platform is ${summary.best_platform || "mixed"}, earning more per hour than alternatives. ` +
-    `Consider front-loading your hours early in the week when demand is higher in ${summary.city}. ` +
-    `Your earnings trend looks ${summary.earnings_trend_4_weeks?.[0]?.avg_eph > (summary.earnings_trend_4_weeks?.[1]?.avg_eph || 0) ? "upward" : "stable"} — keep it up!`;
+  const msgRes = await fetch(`${BASE44_API_URL}/conversations/${conversationId}/messages`, {
+    method: "POST",
+    headers: { "api_key": BASE44_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ role: "user", content: userContent }),
+  });
+  if (!msgRes.ok) {
+    const errBody = await msgRes.text();
+    console.error("Base44 send message failed:", msgRes.status, errBody);
+    return NextResponse.json({ error: `Base44 message error ${msgRes.status}: ${errBody}` }, { status: 500 });
+  }
+
+  // The endpoint returns the assistant message directly (not a conversation wrapper)
+  const assistantMsg = await msgRes.json();
+  const rawContent = typeof assistantMsg.content === "string"
+    ? assistantMsg.content
+    : JSON.stringify(assistantMsg.content);
+
+  // ── Step 3: Parse JSON, fallback to treating full content as insight ───────
+  let top_suggestion: string;
+  let insight_text: string;
+  try {
+    const cleaned = rawContent.replace(/```json\n?|\n?```/g, "").trim();
+    const parsed = JSON.parse(cleaned);
+    top_suggestion = parsed.top_suggestion;
+    insight_text = parsed.insight_text;
+  } catch {
+    // Agent returned prose — use it directly
+    const lines = rawContent.split("\n").filter((l: string) => l.trim());
+    top_suggestion = lines[0].replace(/[*#]/g, "").trim().slice(0, 120);
+    insight_text = rawContent.replace(/\*\*/g, "").slice(0, 600);
+  }
 
   // Save insight via FastAPI
   const saveRes = await fetch(`${API_URL}/agent/save-insight`, {

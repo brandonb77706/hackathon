@@ -95,6 +95,54 @@ async def google_callback(code: str, request: Request):
     )
 
 
+from pydantic import BaseModel as _BaseModel
+
+class GoogleTokenRequest(_BaseModel):
+    access_token: str
+
+
+@router.post("/google-token", response_model=TokenResponse)
+async def google_token_exchange(payload: GoogleTokenRequest):
+    """
+    Accepts a Google access token (issued by next-auth),
+    fetches user info from Google, upserts user by oauth_sub, returns FastAPI JWT.
+    This avoids a second OAuth redirect dance.
+    """
+    async with httpx.AsyncClient() as client:
+        userinfo_resp = await client.get(
+            GOOGLE_USERINFO_URL,
+            headers={"Authorization": f"Bearer {payload.access_token}"},
+        )
+        if userinfo_resp.status_code != 200:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=401, detail="Invalid Google access token")
+        userinfo = userinfo_resp.json()
+
+    oauth_sub = userinfo["sub"]
+    email = userinfo.get("email")
+    name = userinfo.get("name")
+
+    db = get_db()
+    result = await db.users.find_one_and_update(
+        {"oauth_sub": oauth_sub},
+        {
+            "$set": {"email": email, "name": name},
+            "$setOnInsert": {
+                "oauth_provider": "google",
+                "oauth_sub": oauth_sub,
+                "city": None,
+                "created_at": datetime.now(timezone.utc),
+            },
+        },
+        upsert=True,
+        return_document=True,
+    )
+
+    user_id = str(result["_id"])
+    jwt_token = create_access_token(user_id=user_id, oauth_sub=oauth_sub)
+    return TokenResponse(access_token=jwt_token)
+
+
 @router.get("/me", response_model=UserProfile)
 async def get_me(current_user: dict = Depends(get_current_user)):
     """Return profile for the authenticated user."""

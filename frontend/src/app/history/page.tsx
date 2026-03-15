@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
-import { fetchMe, fetchShifts, Shift } from "@/lib/api";
+import { fetchMe, fetchShifts, Shift, AuthError } from "@/lib/api";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const PLATFORM_LABELS: Record<string, string> = {
@@ -24,8 +24,8 @@ export default function HistoryPage() {
         const me = await fetchMe();
         const data = await fetchShifts(me.user_id);
         setShifts(data);
-      } catch {
-        router.push("/login");
+      } catch (e) {
+        if (e instanceof AuthError) router.push("/login");
       } finally {
         setLoading(false);
       }

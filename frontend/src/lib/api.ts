@@ -11,6 +11,14 @@ function getToken(): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
+// Thrown only on 401 — callers check instanceof AuthError to decide whether to redirect
+export class AuthError extends Error {
+  constructor(message = "Unauthorized") {
+    super(message);
+    this.name = "AuthError";
+  }
+}
+
 async function apiFetch<T>(
   path: string,
   options: RequestInit = {}
@@ -22,7 +30,13 @@ async function apiFetch<T>(
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+  // Next.js API routes use relative URL; FastAPI calls use the full API_URL
+  const url = path.startsWith("/api/") ? path : `${API_URL}${path}`;
+  const res = await fetch(url, { ...options, headers });
+
+  if (res.status === 401) {
+    throw new AuthError("Session expired — please sign in again");
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(err.detail || "API error");
@@ -131,11 +145,6 @@ export interface Insight {
 export async function fetchLatestInsight(
   userId: string
 ): Promise<Insight | null> {
-  const agentKey =
-    typeof window !== "undefined"
-      ? ""
-      : process.env.AGENT_API_KEY || "";
-  // Client-side: call Next.js API route which adds the key server-side
   return apiFetch<Insight | null>(`/api/agent/latest-insight?user_id=${userId}`);
 }
 
