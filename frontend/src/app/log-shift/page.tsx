@@ -281,7 +281,7 @@ export default function LogShiftPage() {
   return (
     <>
       <Navbar />
-      <main className="max-w-md mx-auto px-4 py-8">
+      <main className="max-w-md mx-auto px-4 py-8 animate-fade-in">
         {/* Progress */}
         <div className="flex items-center justify-center gap-3 mb-8">
           {([1, 2, 3] as Step[]).map((s) => (
@@ -352,7 +352,7 @@ export default function LogShiftPage() {
                 <button
                   key={p.id}
                   onClick={() => handlePlatform(p.id)}
-                  className="flex flex-col items-center justify-center bg-white border-2 border-slate-200 hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/10 rounded-2xl py-5 px-4 transition-all duration-200 active:scale-95 w-full"
+                  className="flex flex-col items-center justify-center bg-white border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50/30 hover:shadow-lg hover:shadow-blue-500/10 rounded-2xl py-5 px-4 transition-all duration-200 active:scale-95 w-full"
                 >
                   <div className="flex items-center justify-center">
                     {PLATFORM_LOGOS[p.id]}
@@ -365,7 +365,7 @@ export default function LogShiftPage() {
 
         {/* ── Step 2: Times ────────────────────────────────────────── */}
         {step === 2 && (
-          <div>
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
             <h1 className="text-2xl font-bold text-slate-900 mb-1 tracking-tight">
               When did you work?
             </h1>
@@ -429,7 +429,7 @@ export default function LogShiftPage() {
                   type="datetime-local"
                   value={form.start_time}
                   onChange={(e) => set("start_time", e.target.value)}
-                  className="w-full border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-4 py-3 text-base focus:outline-none transition-all duration-200"
+                  className="w-full border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-4 py-3 text-base focus:outline-none transition-all duration-200 bg-white"
                 />
               </div>
               <div>
@@ -440,7 +440,7 @@ export default function LogShiftPage() {
                   type="datetime-local"
                   value={form.end_time}
                   onChange={(e) => set("end_time", e.target.value)}
-                  className="w-full border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-4 py-3 text-base focus:outline-none transition-all duration-200"
+                  className="w-full border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-4 py-3 text-base focus:outline-none transition-all duration-200 bg-white"
                 />
               </div>
             </div>
@@ -455,7 +455,7 @@ export default function LogShiftPage() {
 
         {/* ── Step 3: Pay ──────────────────────────────────────────── */}
         {step === 3 && (
-          <div>
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
             <h1 className="text-2xl font-bold text-slate-900 mb-1 tracking-tight">
               How much did you earn?
             </h1>
@@ -479,7 +479,7 @@ export default function LogShiftPage() {
                     step="1"
                     placeholder="0.00"
                     inputMode="decimal"
-                    className="w-full border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-8 pr-4 py-3 text-base focus:outline-none transition-all duration-200"
+                    className="w-full border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-8 pr-4 py-3 text-base focus:outline-none transition-all duration-200 bg-white"
                   />
                 </div>
                 {form.earnings && (
@@ -508,7 +508,7 @@ export default function LogShiftPage() {
                     step="1"
                     placeholder="0.00"
                     inputMode="decimal"
-                    className="w-full border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-8 pr-4 py-3 text-base focus:outline-none transition-all duration-200"
+                    className="w-full border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-8 pr-4 py-3 text-base focus:outline-none transition-all duration-200 bg-white"
                   />
                 </div>
                 {form.tips && (
@@ -535,7 +535,7 @@ export default function LogShiftPage() {
                     onFocus={() => setShowCitySuggestions(true)}
                     placeholder="Type your city…"
                     autoComplete="off"
-                    className={`w-full border-2 rounded-xl px-4 py-3 text-base focus:outline-none transition-all duration-200 ${
+                    className={`w-full border-2 rounded-xl px-4 py-3 text-base focus:outline-none transition-all duration-200 bg-white ${
                       form.city
                         ? "border-blue-500 bg-blue-50/50 focus:ring-4 focus:ring-blue-500/10"
                         : "border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"

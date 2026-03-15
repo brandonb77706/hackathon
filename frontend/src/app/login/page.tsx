@@ -9,20 +9,23 @@ export default function LoginPage() {
       <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 glass rounded-3xl p-10 flex flex-col items-center gap-6 max-w-sm w-full mx-4 shadow-2xl shadow-black/40">
-        {/* Icon */}
+        {/* App icon */}
+        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-3xl shadow-xl shadow-blue-500/40">
+          ⚡
+        </div>
 
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-white tracking-tight">
+          <h1 className="text-4xl font-extrabold text-white tracking-tighter">
             PeakPay
           </h1>
-          <p className="text-blue-200/70 text-sm leading-relaxed">
+          <p className="text-blue-200/90 text-sm leading-relaxed">
             Optimize your drive. Max your earnings.
           </p>
         </div>
 
         <button
           onClick={() => signIn("google")}
-          className="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-50 rounded-xl px-4 py-3.5 text-slate-700 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 active:scale-[0.98]"
+          className="group w-full flex items-center justify-center gap-3 bg-white hover:bg-blue-50 rounded-xl px-4 py-3.5 text-slate-700 font-semibold shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-black/30 transition-all duration-200 active:scale-[0.98]"
         >
           <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
             <path
@@ -43,9 +46,10 @@ export default function LoginPage() {
             />
           </svg>
           Sign in with Google
+          <span className="ml-auto text-slate-400 group-hover:translate-x-0.5 transition-transform duration-150">→</span>
         </button>
 
-        <p className="text-xs text-blue-300/50 text-center">
+        <p className="text-xs text-blue-300/70 text-center">
           Works with Uber, DoorDash, Lyft, Instacart, and more
         </p>
       </div>
