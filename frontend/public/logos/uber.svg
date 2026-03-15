@@ -1,0 +1,9 @@
+<svg viewBox="0 0 160 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Uber wordmark in bold black -->
+  <text x="0" y="50"
+    font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif"
+    font-weight="900"
+    font-size="58"
+    letter-spacing="-2"
+    fill="#000000">Uber</text>
+</svg>

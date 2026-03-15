@@ -3,20 +3,28 @@ import { signIn } from "next-auth/react";
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100">
-      <div className="bg-white rounded-2xl shadow-lg p-10 flex flex-col items-center gap-6 max-w-sm w-full mx-4">
-        <div className="text-4xl">🚗</div>
-        <h1 className="text-2xl font-bold text-gray-800 text-center">
-          GigWorker Peak Time Optimizer
-        </h1>
-        <p className="text-gray-500 text-center text-sm">
-          Log your shifts. Discover your highest-earning windows. Drive smarter.
-        </p>
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950">
+      {/* Ambient glow orbs */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="relative z-10 glass rounded-3xl p-10 flex flex-col items-center gap-6 max-w-sm w-full mx-4 shadow-2xl shadow-black/40">
+        {/* Icon */}
+
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-bold text-white tracking-tight">
+            PeakPay
+          </h1>
+          <p className="text-blue-200/70 text-sm leading-relaxed">
+            Optimize your drive. Max your earnings.
+          </p>
+        </div>
+
         <button
           onClick={() => signIn("google")}
-          className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-700 font-medium hover:bg-gray-50 transition shadow-sm"
+          className="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-50 rounded-xl px-4 py-3.5 text-slate-700 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 active:scale-[0.98]"
         >
-          <svg className="w-5 h-5" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
             <path
               fill="#4285F4"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -36,7 +44,8 @@ export default function LoginPage() {
           </svg>
           Sign in with Google
         </button>
-        <p className="text-xs text-gray-400 text-center">
+
+        <p className="text-xs text-blue-300/50 text-center">
           Works with Uber, DoorDash, Lyft, Instacart, and more
         </p>
       </div>
