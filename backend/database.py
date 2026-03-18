@@ -1,3 +1,4 @@
+import certifi
 from motor.motor_asyncio import AsyncIOMotorClient
 from config import settings
 
@@ -7,7 +8,7 @@ db = None
 
 async def connect_db():
     global client, db
-    client = AsyncIOMotorClient(settings.mongodb_uri)
+    client = AsyncIOMotorClient(settings.mongodb_uri, tlsCAFile=certifi.where())
     db = client.get_default_database()
     # Ensure indexes
     await db.users.create_index("oauth_sub", unique=True)
