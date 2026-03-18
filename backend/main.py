@@ -17,9 +17,11 @@ from routes.user_routes import router as user_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await connect_db()
-    # Rebuild peak_cache on startup so heatmap has data immediately
-    await rebuild_peak_cache(get_db())
+    import asyncio
+    async def startup():
+        await connect_db()
+        await rebuild_peak_cache(get_db())
+    asyncio.create_task(startup())
     yield
     await close_db()
 
