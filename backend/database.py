@@ -8,7 +8,11 @@ db = None
 
 async def connect_db():
     global client, db
-    client = AsyncIOMotorClient(settings.mongodb_uri, tlsCAFile=certifi.where())
+    client = AsyncIOMotorClient(
+        settings.mongodb_uri,
+        tlsCAFile=certifi.where(),
+        tlsAllowInvalidCertificates=True,
+    )
     db = client.get_default_database()
     # Ensure indexes
     await db.users.create_index("oauth_sub", unique=True)
