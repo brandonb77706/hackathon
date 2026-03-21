@@ -188,6 +188,7 @@ export default function LogShiftPage() {
 
   const [form, setForm] = useState({
     platform: "",
+    shift_date: new Date().toISOString().slice(0, 10), // YYYY-MM-DD
     start_time: "",
     end_time: "",
     earnings: "",
@@ -235,13 +236,25 @@ export default function LogShiftPage() {
     setStep(2);
   }
 
+  function buildDateTime(date: string, time: string): Date {
+    return new Date(`${date}T${time}`);
+  }
+
   function handleTimesNext() {
-    if (!form.start_time || !form.end_time) {
-      setError("Please fill in both start and end times.");
+    if (!form.shift_date || !form.start_time || !form.end_time) {
+      setError("Please fill in the date, start time, and end time.");
       return;
     }
-    if (new Date(form.end_time) <= new Date(form.start_time)) {
-      setError("End time must be after start time.");
+    const start = buildDateTime(form.shift_date, form.start_time);
+    // If end time is earlier than start (overnight shift), add 1 day
+    let end = buildDateTime(form.shift_date, form.end_time);
+    if (end <= start) {
+      const next = new Date(end);
+      next.setDate(next.getDate() + 1);
+      end = next;
+    }
+    if ((end.getTime() - start.getTime()) > 24 * 60 * 60 * 1000) {
+      setError("Shift cannot be longer than 24 hours.");
       return;
     }
     setError(null);
@@ -260,10 +273,13 @@ export default function LogShiftPage() {
     setSubmitting(true);
     setError(null);
     try {
+      const startDt = buildDateTime(form.shift_date, form.start_time);
+      let endDt = buildDateTime(form.shift_date, form.end_time);
+      if (endDt <= startDt) endDt.setDate(endDt.getDate() + 1);
       await logShift({
         platform: form.platform,
-        start_time: new Date(form.start_time).toISOString(),
-        end_time: new Date(form.end_time).toISOString(),
+        start_time: startDt.toISOString(),
+        end_time: endDt.toISOString(),
         earnings: parseFloat(form.earnings),
         tips: form.tips ? parseFloat(form.tips) : 0,
         city: form.city,
@@ -421,28 +437,58 @@ export default function LogShiftPage() {
               </p>
             </div>
             <div className="space-y-4">
+              {/* Date — picked once */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Start time
+                  Date
                 </label>
                 <input
-                  type="datetime-local"
-                  value={form.start_time}
-                  onChange={(e) => set("start_time", e.target.value)}
+                  type="date"
+                  value={form.shift_date}
+                  onChange={(e) => set("shift_date", e.target.value)}
                   className="w-full border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-4 py-3 text-base focus:outline-none transition-all duration-200 bg-white"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  End time
-                </label>
-                <input
-                  type="datetime-local"
-                  value={form.end_time}
-                  onChange={(e) => set("end_time", e.target.value)}
-                  className="w-full border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-4 py-3 text-base focus:outline-none transition-all duration-200 bg-white"
-                />
+
+              {/* Start & End times side-by-side */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Start time
+                  </label>
+                  <input
+                    type="time"
+                    value={form.start_time}
+                    onChange={(e) => set("start_time", e.target.value)}
+                    className="w-full border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-4 py-3 text-base focus:outline-none transition-all duration-200 bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    End time
+                  </label>
+                  <input
+                    type="time"
+                    value={form.end_time}
+                    onChange={(e) => set("end_time", e.target.value)}
+                    className="w-full border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-4 py-3 text-base focus:outline-none transition-all duration-200 bg-white"
+                  />
+                </div>
               </div>
+              {form.start_time && form.end_time && form.shift_date && (() => {
+                const start = buildDateTime(form.shift_date, form.start_time);
+                let end = buildDateTime(form.shift_date, form.end_time);
+                if (end <= start) end = new Date(end.getTime() + 86400000);
+                const hrs = ((end.getTime() - start.getTime()) / 3600000).toFixed(1);
+                return (
+                  <p className="text-xs text-slate-400 pl-1">
+                    Duration: <span className="font-medium text-slate-600">{hrs} hrs</span>
+                    {end.getDate() !== start.getDate() && (
+                      <span className="ml-1 text-amber-500">(ends next day)</span>
+                    )}
+                  </p>
+                );
+              })()}
             </div>
             <button
               onClick={handleTimesNext}
