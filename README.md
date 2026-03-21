@@ -1,4 +1,4 @@
-# GigWorker Peak Time Optimizer
+# PeakPay
 
 Helps Uber, DoorDash, Lyft, Instacart, and other gig delivery drivers find their highest-earning time windows using two prediction layers:
 
